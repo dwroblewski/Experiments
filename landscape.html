@@ -2,52 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Procedural Landscape Flyover - Mobile</title>
+  <title>Procedural Landscape Flyover — Auto-Pilot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <style>
     html, body { height:100%; margin:0; background:#87c5eb; overflow:hidden; }
     canvas { display:block; touch-action:none; }
-    /* Overlay */
-    #overlay {
-      position: fixed; inset: 0; display:grid; place-items:center;
-      background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.65));
-      color:#fff; text-align:center; user-select:none; cursor:pointer; padding:24px;
-    }
-    .title { font-size:clamp(20px, 5vw, 36px); font-weight:700; margin-bottom:8px; }
-    .hint { font-size:clamp(12px, 3.5vw, 16px); opacity:0.95; line-height:1.4; }
-    /* HUD */
-    #panel {
-      position: fixed; top: 10px; left: 10px; z-index: 10;
-      padding: 8px 10px; border-radius:8px;
-      background: rgba(0, 0, 0, 0.45); color:#fff; font:12px/1.35 ui-monospace, Menlo, Consolas, monospace;
-      white-space: pre; pointer-events:none;
-    }
-    /* On-screen buttons (mobile) */
-    #buttons {
-      position: fixed; right: 10px; bottom: 10px; display:flex; flex-wrap:wrap; gap:6px; z-index: 9;
-    }
-    #buttons button {
-      font: 12px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      padding: 8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.25);
-      background: rgba(0,0,0,0.45); color:#fff;
-    }
-    /* Touch pads (visual hints only) */
-    .pad {
-      position: fixed; bottom: 16px; width: 42vw; max-width: 340px; aspect-ratio: 1 / 1;
-      border-radius: 50%; border: 2px dashed rgba(255,255,255,0.25);
-      background: radial-gradient(circle at center, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-      z-index: 5; pointer-events:none;
-    }
-    #padL { left: 16px; }
-    #padR { right: 16px; }
-    #crosshair { position: fixed; left:50%; top:50%; width: 16px; height: 16px; transform: translate(-50%,-50%); opacity:0.8; pointer-events:none; }
-    #crosshair:before, #crosshair:after { content:""; position:absolute; background: rgba(255,255,255,0.85); }
-    #crosshair:before { left:50%; top:0; width:2px; height:100%; transform:translateX(-50%); }
-    #crosshair:after  { top:50%; left:0; height:2px; width:100%; transform:translateY(-50%); }
-    @media (pointer: fine) {
-      /* Hide touch pads on desktop */
-      .pad, #buttons { display:none; }
-    }
+    #overlay{position:fixed; inset:0; display:grid; place-items:center; background:linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.65)); color:#fff; text-align:center; user-select:none; cursor:pointer; padding:24px;}
+    .title{font-size:clamp(20px,5vw,36px); font-weight:700; margin-bottom:8px;}
+    .hint{font-size:clamp(12px,3.5vw,16px); opacity:.95; line-height:1.4;}
+    #panel{position:fixed; top:10px; left:10px; z-index:10; padding:8px 10px; border-radius:8px; background:rgba(0,0,0,.45); color:#fff; font:12px/1.35 ui-monospace,Menlo,Consolas,monospace; white-space:pre; pointer-events:none;}
+    #buttons{position:fixed; right:10px; bottom:10px; display:flex; flex-wrap:wrap; gap:6px; z-index:9;}
+    #buttons button{font:12px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.45); color:#fff;}
+    .pad{position:fixed; bottom:16px; width:42vw; max-width:340px; aspect-ratio:1/1; border-radius:50%; border:2px dashed rgba(255,255,255,.25); background:radial-gradient(circle at center, rgba(255,255,255,.08), rgba(255,255,255,.02)); z-index:5; pointer-events:none;}
+    #padL{left:16px;} #padR{right:16px;}
+    #crosshair{position:fixed; left:50%; top:50%; width:16px; height:16px; transform:translate(-50%,-50%); opacity:.8; pointer-events:none;}
+    #crosshair:before,#crosshair:after{content:""; position:absolute; background:rgba(255,255,255,.85);}
+    #crosshair:before{left:50%; top:0; width:2px; height:100%; transform:translateX(-50%);}
+    #crosshair:after{top:50%; left:0; height:2px; width:100%; transform:translateY(-50%);}
+    @media (pointer:fine){ .pad, #buttons { display:none; } }
   </style>
 </head>
 <body>
@@ -57,9 +29,9 @@
     <div>
       <div class="title">Procedural Landscape Flyover</div>
       <div class="hint">
-        Tap to start. iPhone: use left screen half to move, right half to look.  
-        Desktop: click, then WASD to move, mouse to look.
-        Toggles: R wireframe, L new world, F auto‑fly, +/‑ speed.
+        Tap to start. Mobile: left screen half to move, right half to look.  
+        Desktop: click, then WASD + mouse.  
+        Buttons: Auto, Speed ±, Wireframe, New World. Keys: R, L, F, +, −.
       </div>
     </div>
   </div>
@@ -69,7 +41,6 @@
   <div id="padL" class="pad"></div>
   <div id="padR" class="pad"></div>
 
-  <!-- Mobile buttons -->
   <div id="buttons">
     <button id="btnAuto">AUTO: ON</button>
     <button id="btnMinus">Speed −</button>
@@ -81,27 +52,28 @@
   <script type="module">
     import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 
-    // Detect mobile
+    // Device hints
     const IS_MOBILE = (navigator.maxTouchPoints || 0) > 0 || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     const PR_MAX = IS_MOBILE ? 1.5 : 2;
 
-    // Config tuned for mobile
+    // World config
     const CONFIG = {
       CHUNK_SIZE: 256,
       RES: IS_MOBILE ? 48 : 64,
-      RADIUS: IS_MOBILE ? 2 : 2,
+      RADIUS: IS_MOBILE ? 2 : 3,
       SEA_LEVEL: 0,
-      CAMERA_START_Y: 120,
-      BASE_SPEED: IS_MOBILE ? 40 : 60,
+      CAMERA_START_Y: 140,
+      BASE_SPEED: IS_MOBILE ? 42 : 65,
       BOOST_MULT: 3.0,
-      MIN_ALTITUDE: 6,
-      FOG_NEAR: IS_MOBILE ? 200 : 200,
-      FOG_FAR:  IS_MOBILE ? 2400 : 3200,
+      MIN_ALTITUDE: 8,
+      // Longer line of sight
+      FOG_NEAR: 250,
+      FOG_FAR:  IS_MOBILE ? 5200 : 9000,
       SUN_ELEVATION: 0.94,
       SUN_AZIMUTH_SPEED: 0.02
     };
 
-    // Seed helpers and noise
+    // Seeded noise
     function hashStringToSeed(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
     function mulberry32(a){ return function(){ let t=a+=0x6D2B79F5; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
     function makePermutation(seed){ const rnd=mulberry32(seed); const p=new Uint8Array(256); for(let i=0;i<256;i++) p[i]=i;
@@ -122,64 +94,58 @@
     function fbm2D(noise,x,y,oct=5,lac=2,gain=0.5){ let sum=0,amp=0.5,freq=1; for(let i=0;i<oct;i++){ sum+=amp*noise(x*freq,y*freq); freq*=lac; amp*=gain; } return 0.5+0.5*sum; }
     function ridged2D(noise,x,y,oct=5){ let sum=0,amp=0.5,freq=1; for(let i=0;i<oct;i++){ const n=1-Math.abs(noise(x*freq,y*freq)); sum+=(n*n)*amp; freq*=2; amp*=0.5; } return sum; }
 
+    // Height field
     function makeHeightFunc(seed){
       const perm=makePermutation(seed), noise=makePerlin2D(perm);
       const CONT=1/1800, HILL=1/700, MOUN=1/400, WARP=1/1000, WSTR=120;
       const o1=37.13,o2=91.7,o3=151.3;
       return function heightAt(x,z){
         const c=fbm2D(noise,x*CONT,z*CONT,5,2,0.5);
-        const continent = (()=>{ const t=Math.min(1,Math.max(0,(c-0.45)/(0.58-0.45))); return t*t*(3-2*t); })();
-
+        const t=Math.min(1,Math.max(0,(c-0.45)/(0.58-0.45))); const continent=t*t*(3-2*t);
         const wx=fbm2D(noise,(x+o1)*WARP,(z+o2)*WARP,3,2.2,0.5);
         const wz=fbm2D(noise,(x-o3)*WARP,(z+o1)*WARP,3,2.2,0.5);
         const xw=x+(wx-0.5)*2*WSTR, zw=z+(wz-0.5)*2*WSTR;
-
         const hills=fbm2D(noise,x*HILL,z*HILL,5,2,0.5);
         const mount=ridged2D(noise,xw*MOUN,zw*MOUN,5);
-
-        const oceanFloor = -42*(1-continent);
-        const land = continent*(hills*28 + mount*135) + continent*8;
-        const micro = fbm2D(noise,x*1/120,z*1/120,2,2,0.5)*1.6;
+        const oceanFloor=-42*(1-continent);
+        const land=continent*(hills*28 + mount*135) + continent*8;
+        const micro=fbm2D(noise,x*1/120,z*1/120,2,2,0.5)*1.6;
         return oceanFloor + land + micro;
       };
     }
 
-    // Renderer
+    // Renderer and scene
     const canvas=document.getElementById("c");
     const renderer=new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:"high-performance" });
     renderer.setPixelRatio(Math.min(devicePixelRatio, PR_MAX));
-    function resize(){ const w=window.innerWidth, h=window.innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
-    window.addEventListener("resize", resize);
-
-    // Scene and camera
     const scene=new THREE.Scene();
     const SKY=new THREE.Color(0x87c5eb);
     scene.background=SKY;
     scene.fog=new THREE.Fog(SKY, CONFIG.FOG_NEAR, CONFIG.FOG_FAR);
 
-    const camera=new THREE.PerspectiveCamera(75, 1, 0.1, 10000);
+    const camera=new THREE.PerspectiveCamera(74, 1, 0.1, 20000);
 
+    // Rig: yaw -> bank -> pitch -> camera
     const yaw=new THREE.Object3D();
+    const bank=new THREE.Object3D();
     const pitch=new THREE.Object3D();
-    yaw.add(pitch); pitch.add(camera); scene.add(yaw);
-    camera.position.set(0,0,0);
+    yaw.add(bank); bank.add(pitch); pitch.add(camera); scene.add(yaw);
     yaw.position.set(0, CONFIG.CAMERA_START_Y, 0);
 
     // Lights
-    const hemi=new THREE.HemisphereLight(0xffffff, 0x44606b, 0.65); hemi.position.set(0,1,0); scene.add(hemi);
-    const sun=new THREE.DirectionalLight(0xffffff, 0.9); sun.position.set(400,800*CONFIG.SUN_ELEVATION,300); scene.add(sun);
+    const hemi=new THREE.HemisphereLight(0xffffff, 0x4d6d76, 0.7); hemi.position.set(0,1,0); scene.add(hemi);
+    const sun=new THREE.DirectionalLight(0xffffff, 1.0); sun.position.set(600,900*CONFIG.SUN_ELEVATION,300); sun.castShadow=false; scene.add(sun);
 
     // Water
-    const waterGeom=new THREE.PlaneGeometry(20000,20000,1,1); waterGeom.rotateX(-Math.PI/2);
-    const waterMat=new THREE.MeshStandardMaterial({ color:new THREE.Color(0x3a83b3), roughness:0.25, metalness:0, transparent:true, opacity:0.8 });
+    const waterGeom=new THREE.PlaneGeometry(40000,40000,1,1); waterGeom.rotateX(-Math.PI/2);
+    const waterMat=new THREE.MeshStandardMaterial({ color:new THREE.Color(0x3a83b3), roughness:0.22, metalness:0, transparent:true, opacity:0.82 });
     const water=new THREE.Mesh(waterGeom, waterMat); water.position.y=CONFIG.SEA_LEVEL; scene.add(water);
 
     // Terrain streaming
     const CHUNK=CONFIG.CHUNK_SIZE, RES=CONFIG.RES;
     let currentSeed=(new URLSearchParams(location.search)).get("seed") || Math.random().toString(36).slice(2);
     let heightAt=makeHeightFunc(hashStringToSeed(currentSeed));
-
-    const terrainMat=new THREE.MeshStandardMaterial({ vertexColors:true, roughness:1, metalness:0, flatShading:false });
+    const terrainMat=new THREE.MeshStandardMaterial({ vertexColors:true, roughness:0.95, metalness:0, flatShading:false });
 
     const chunks=new Map();
     function key(ix,iz){ return ix+","+iz; }
@@ -207,12 +173,10 @@
         const vx=i%(RES+1), vz=(i/(RES+1))|0;
         const wx=ix*CHUNK + (vx/RES)*CHUNK;
         const wz=iz*CHUNK + (vz/RES)*CHUNK;
-        const h=heightAt(wx,wz);
-        pos.setZ(i,h);
+        pos.setZ(i, heightAt(wx,wz));
       }
       geom.rotateX(-Math.PI/2);
       geom.computeVertexNormals();
-
       const normals=geom.attributes.normal;
       const colors=new Float32Array(verts*3);
       for(let i=0;i<verts;i++){
@@ -244,19 +208,15 @@
           if(!chunks.has(k)) makeChunk(cx+dx,cz+dz);
         }
       }
-      for(const [k,m] of chunks){
+      for(const [k] of chunks){
         const [ix,iz]=k.split(",").map(Number);
         if(Math.abs(ix-cx)>CONFIG.RADIUS || Math.abs(iz-cz)>CONFIG.RADIUS) disposeChunk(ix,iz);
       }
     }
 
-    // Controls
+    // Input
     const overlay=document.getElementById("overlay");
-    overlay.addEventListener("click", () => {
-      if (!IS_MOBILE) {
-        canvas.requestPointerLock?.();
-      }
-    });
+    overlay.addEventListener("click", () => { if (!IS_MOBILE) canvas.requestPointerLock?.(); overlay.style.display="none"; });
     document.addEventListener("pointerlockchange", () => { overlay.style.display = document.pointerLockElement === canvas ? "none" : ""; });
     if (IS_MOBILE) overlay.addEventListener("click", () => overlay.style.display="none");
 
@@ -277,84 +237,62 @@
       if (IS_MOBILE) return;
       if (document.pointerLockElement !== canvas) return;
       const sens=0.002;
-      look.yaw -= e.movementX*sens;
+      look.yaw   -= e.movementX*sens;
       look.pitch -= e.movementY*sens;
       const maxPitch=Math.PI/2-0.001;
       look.pitch=Math.max(-maxPitch, Math.min(maxPitch, look.pitch));
     });
 
-    // Touch controls: left half = move, right half = look
-    const touchState = {
-      leftId: null, rightId: null,
-      leftStart: {x:0,y:0}, rightPrev: {x:0,y:0},
-      moveX: 0, moveZ: 0
-    };
-    function norm(vx, vy) {
-      const r=Math.hypot(vx,vy);
-      if (r<16) return {x:0,y:0};
-      const max=120;
-      const k=Math.min(1, r/max);
-      return { x:(vx/r)*k, y:(vy/r)*k };
-    }
-    canvas.addEventListener("touchstart", (e)=>{
-      for (const t of e.changedTouches) {
-        const isLeft = t.clientX < window.innerWidth*0.5;
-        if (isLeft && touchState.leftId === null) {
-          touchState.leftId = t.identifier;
-          touchState.leftStart = { x: t.clientX, y: t.clientY };
-        } else if (!isLeft && touchState.rightId === null) {
-          touchState.rightId = t.identifier;
-          touchState.rightPrev = { x: t.clientX, y: t.clientY };
-        }
-      }
-    }, {passive:false});
-    canvas.addEventListener("touchmove", (e)=>{
-      for (const t of e.changedTouches) {
-        if (t.identifier === touchState.leftId) {
-          const d = norm(t.clientX - touchState.leftStart.x, t.clientY - touchState.leftStart.y);
-          // Left stick: forward/back is -y, strafe is x
-          touchState.moveX = d.x;
-          touchState.moveZ = -d.y;
-        } else if (t.identifier === touchState.rightId) {
-          // Right stick: relative look deltas
-          const dx = t.clientX - touchState.rightPrev.x;
-          const dy = t.clientY - touchState.rightPrev.y;
-          touchState.rightPrev = { x: t.clientX, y: t.clientY };
-          const sens = 0.0035;
-          look.yaw   -= dx * sens;
-          look.pitch -= dy * sens;
-          const maxPitch=Math.PI/2-0.001;
-          look.pitch=Math.max(-maxPitch, Math.min(maxPitch, look.pitch));
-        }
-      }
-      e.preventDefault();
-    }, {passive:false});
-    canvas.addEventListener("touchend", (e)=>{
-      for (const t of e.changedTouches) {
-        if (t.identifier === touchState.leftId) {
-          touchState.leftId = null; touchState.moveX = 0; touchState.moveZ = 0;
-        } else if (t.identifier === touchState.rightId) {
-          touchState.rightId = null;
-        }
-      }
-    });
+    // Touch controls
+    const touchState = { leftId:null, rightId:null, leftStart:{x:0,y:0}, rightPrev:{x:0,y:0}, moveX:0, moveZ:0 };
+    function norm(vx,vy){ const r=Math.hypot(vx,vy); if(r<16) return {x:0,y:0}; const max=120; const k=Math.min(1,r/max); return {x:(vx/r)*k, y:(vy/r)*k}; }
+    canvas.addEventListener("touchstart",(e)=>{ for(const t of e.changedTouches){ const left=t.clientX < window.innerWidth*0.5;
+      if(left && touchState.leftId===null){ touchState.leftId=t.identifier; touchState.leftStart={x:t.clientX,y:t.clientY}; }
+      else if(!left && touchState.rightId===null){ touchState.rightId=t.identifier; touchState.rightPrev={x:t.clientX,y:t.clientY}; } }},{passive:false});
+    canvas.addEventListener("touchmove",(e)=>{ for(const t of e.changedTouches){
+      if(t.identifier===touchState.leftId){ const d=norm(t.clientX-touchState.leftStart.x, t.clientY-touchState.leftStart.y); touchState.moveX=d.x; touchState.moveZ=-d.y; }
+      else if(t.identifier===touchState.rightId){ const dx=t.clientX-touchState.rightPrev.x, dy=t.clientY-touchState.rightPrev.y; touchState.rightPrev={x:t.clientX,y:t.clientY};
+        const sens=0.0035; look.yaw-=dx*sens; look.pitch-=dy*sens; const maxPitch=Math.PI/2-0.001; look.pitch=Math.max(-maxPitch,Math.min(maxPitch,look.pitch)); } }
+      e.preventDefault(); }, {passive:false});
+    canvas.addEventListener("touchend",(e)=>{ for(const t of e.changedTouches){ if(t.identifier===touchState.leftId){ touchState.leftId=null; touchState.moveX=0; touchState.moveZ=0; } else if(t.identifier===touchState.rightId){ touchState.rightId=null; } } });
 
-    // Movement and auto‑fly
-    let speedMult=1.0;
+    // Auto-pilot parameters
+    let autoFly = true;
+    let speedMult = 1.0;
     const velocity=new THREE.Vector3();
-    let autoFly = IS_MOBILE ? true : false;
-    let targetAGL = 40; // target altitude above ground when auto‑fly
+    let baseAGL = 45;       // base altitude above ground
+    const aglJitter = 18;   // amplitude of AGL variation
+    const maxClimbPitch = THREE.MathUtils.degToRad(18);
+    const maxRoll = THREE.MathUtils.degToRad(35);   // visual bank limit
+    const bankGain = 1.6;   // how much roll per rad/s yaw rate
+    const maxYawRate = THREE.MathUtils.degToRad(18); // deg/s -> rad/s for auto turns
+    const yawSlew = 1.5;    // how quickly yaw rate follows target
+    // Low-frequency time noise helpers
+    function n1(t){ return Math.sin(t*0.07)*0.5 + Math.sin(t*0.013)*0.5; } // [-1,1] slow
+    function n2(t){ return Math.sin(t*0.041+1.7)*0.5 + Math.sin(t*0.009)*0.5; }
+    function n3(t){ return Math.sin(t*0.023+0.6); }
 
-    function updateMovement(dt){
+    function updateMovement(dt, nowSec){
+      // Update sun
+      const angle = nowSec*CONFIG.SUN_AZIMUTH_SPEED;
+      const r=1400; sun.position.set(Math.cos(angle)*r, 900*CONFIG.SUN_ELEVATION, Math.sin(angle)*r);
+
+      // Desired forward and right vectors from yaw only (bank is visual)
       yaw.rotation.y = look.yaw;
-      pitch.rotation.x = look.pitch;
-
       const forward=new THREE.Vector3(0,0,-1).applyQuaternion(yaw.quaternion);
-      const right=new THREE.Vector3(1,0,0).applyQuaternion(yaw.quaternion);
+      const right  =new THREE.Vector3(1,0,0).applyQuaternion(yaw.quaternion);
 
+      // Auto-pilot modulation
+      let autoYawRate = 0, speedFactor = 1, aglOffset = 0;
+      if (autoFly) {
+        autoYawRate  = maxYawRate * (n1(nowSec) * 0.7 + n2(nowSec) * 0.3); // gentle S-turns
+        speedFactor  = 0.92 + 0.18 * (0.5 + 0.5*n2(nowSec));               // 0.92..1.10
+        aglOffset    = aglJitter * n3(nowSec);                              // up/down wander
+      }
+
+      // Manual input vector
       let dir=new THREE.Vector3();
-
-      if (!IS_MOBILE) {
+      if (!IS_MOBILE){
         if (keys.has("KeyW")) dir.add(forward);
         if (keys.has("KeyS")) dir.addScaledVector(forward,-1);
         if (keys.has("KeyA")) dir.addScaledVector(right,-1);
@@ -362,33 +300,62 @@
         if (keys.has("Space")) dir.y += 1;
         if (keys.has("ShiftLeft") || keys.has("ShiftRight")) dir.y -= 1;
       } else {
-        // Touch analog
         dir.addScaledVector(forward, touchState.moveZ);
         dir.addScaledVector(right,   touchState.moveX);
       }
 
+      // Auto forward push and altitude hold
+      const ground = heightAt(yaw.position.x, yaw.position.z);
+      const desiredY = ground + Math.max(CONFIG.MIN_ALTITUDE, baseAGL + aglOffset);
+      const errorY = desiredY - yaw.position.y;
+
       if (autoFly) {
-        dir.add(forward); // constant forward push
-        // Altitude hold: nudge up or down toward ground + targetAGL
-        const ground = heightAt(yaw.position.x, yaw.position.z);
-        const desiredY = ground + Math.max(CONFIG.MIN_ALTITUDE, targetAGL);
-        const dy = desiredY - yaw.position.y;
-        velocity.y += dy * 0.3 * dt; // critically damped feel
+        dir.add(forward); // cruise forward
+        // Vertical control: PD
+        const kP=0.9, kD=0.18;
+        const climbCmd = THREE.MathUtils.clamp(kP*errorY - kD*velocity.y, -1, 1);
+        // Convert to pitch target for visual and a bit of vertical velocity
+        const targetPitch = THREE.MathUtils.clamp(-climbCmd * maxClimbPitch, -maxClimbPitch, maxClimbPitch);
+        // Smooth pitch toward target
+        pitch.rotation.x = THREE.MathUtils.damp(pitch.rotation.x, targetPitch, 6.0, dt);
+        // Also gently adjust vertical velocity
+        velocity.y += climbCmd * 8 * dt;
+      } else {
+        // free look pitch from mouse/touch
+        pitch.rotation.x = look.pitch;
       }
 
-      if (dir.lengthSq()>0) dir.normalize();
+      // Apply heading change from auto-turns
+      let desiredYawRate = autoFly ? autoYawRate : 0;
+      // Add a little from manual strafe for feel
+      if (!autoFly) {
+        desiredYawRate += (keys.has("KeyA")?-1:0 + keys.has("KeyD")?1:0) * THREE.MathUtils.degToRad(30);
+      }
+      // Slew yaw rate and update look.yaw
+      const currentYawRate = 0; // implicit, we integrate desired directly via damp of look.yaw
+      const yawDelta = THREE.MathUtils.damp(currentYawRate, desiredYawRate, yawSlew, dt) * dt;
+      look.yaw -= yawDelta;
+      yaw.rotation.y = look.yaw;
 
-      const base = CONFIG.BASE_SPEED * (keys.has("CapsLock") ? CONFIG.BOOST_MULT : 1) * speedMult;
+      // Bank visually with yaw rate
+      const targetBank = THREE.MathUtils.clamp(-bankGain * (desiredYawRate), -maxRoll, maxRoll);
+      bank.rotation.z = THREE.MathUtils.damp(bank.rotation.z, targetBank, 5.0, dt);
+
+      // Move
+      if (dir.lengthSq()>0) dir.normalize();
+      const base = CONFIG.BASE_SPEED * speedMult * (autoFly ? speedFactor : 1);
       const accel = 8 * base;
       velocity.addScaledVector(dir, accel * dt);
-      velocity.multiplyScalar(Math.pow(0.92, dt*60)); // damping
-
+      // Damping
+      velocity.multiplyScalar(Math.pow(0.92, dt*60));
+      // Integrate
       yaw.position.addScaledVector(velocity, dt);
 
-      const ground = heightAt(yaw.position.x, yaw.position.z);
+      // Keep above terrain hard clamp
       const minY = ground + CONFIG.MIN_ALTITUDE;
       if (yaw.position.y < minY) { yaw.position.y = minY; if (velocity.y < 0) velocity.y = 0; }
 
+      // Keep water centered
       water.position.x = yaw.position.x;
       water.position.z = yaw.position.z;
     }
@@ -402,7 +369,7 @@
       ensureChunks();
     }
 
-    // UI buttons
+    // Buttons
     const btnAuto=document.getElementById("btnAuto");
     const btnMinus=document.getElementById("btnMinus");
     const btnPlus=document.getElementById("btnPlus");
@@ -417,43 +384,32 @@
     syncAutoBtn();
 
     // Main loop with adaptive resolution
+    function resize(){ const w=window.innerWidth, h=window.innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+    window.addEventListener("resize", resize);
+    let prev=performance.now(); let acc=0; let frames=0; let fps=0; let resTick=0; let chunkTick=0;
     const panel=document.getElementById("panel");
-    let prev=performance.now(); let acc=0; let frames=0; let fps=0; let resTick=0;
-    let chunkTick=0;
 
     function loop(now){
       const dt=Math.min(0.1, (now-prev)/1000); prev=now;
+      const nowSec = now*0.001;
 
-      // Sun azimuth
-      const angle = now*0.001*CONFIG.SUN_AZIMUTH_SPEED;
-      const r=900; sun.position.set(Math.cos(angle)*r, 800*CONFIG.SUN_ELEVATION, Math.sin(angle)*r);
-
-      updateMovement(dt);
-
-      chunkTick += dt;
-      if (chunkTick > 0.15) { ensureChunks(); chunkTick = 0; }
-
+      ensureChunks();
+      updateMovement(dt, nowSec);
       renderer.render(scene,camera);
 
-      // FPS
-      acc += dt; frames++;
-      if (acc >= 0.5) { fps = Math.round(frames/acc); acc=0; frames=0; }
+      // FPS meter
+      acc+=dt; frames++; if(acc>=0.5){ fps=Math.round(frames/acc); acc=0; frames=0; }
 
-      // Adaptive resolution every 1.5 s
-      resTick += dt;
-      if (resTick > 1.5) {
-        let dpr = renderer.getPixelRatio();
-        if (fps < 45 && dpr > 0.6) {
-          dpr = Math.max(0.5, dpr - 0.1);
-          renderer.setPixelRatio(Math.min(dpr, PR_MAX));
-        } else if (fps > 58 && dpr < PR_MAX) {
-          dpr = Math.min(PR_MAX, dpr + 0.1);
-          renderer.setPixelRatio(dpr);
-        }
-        resTick = 0;
+      // Adaptive DPR every 1.5s
+      resTick+=dt;
+      if(resTick>1.5){
+        let dpr=renderer.getPixelRatio();
+        if(fps<45 && dpr>0.6){ dpr=Math.max(0.5, dpr-0.1); renderer.setPixelRatio(Math.min(dpr, PR_MAX)); }
+        else if(fps>58 && dpr<PR_MAX){ dpr=Math.min(PR_MAX, dpr+0.1); renderer.setPixelRatio(dpr); }
+        resTick=0;
       }
 
-      const p=yaw.position, g=heightAt(p.x, p.z);
+      const p=yaw.position, g=heightAt(p.x,p.z);
       panel.textContent =
 `Seed: ${currentSeed}
 XYZ: ${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)}
@@ -464,13 +420,10 @@ Chunks: ${chunks.size}   FPS: ${fps}   DPR: ${renderer.getPixelRatio().toFixed(2
       requestAnimationFrame(loop);
     }
 
-    function init(){
-      resize();
-      ensureChunks();
-      requestAnimationFrame(loop);
-    }
-
-    init();
+    // Init
+    resize();
+    ensureChunks();
+    requestAnimationFrame(loop);
   </script>
 </body>
 </html>
