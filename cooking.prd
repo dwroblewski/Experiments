@@ -1,0 +1,279 @@
+Cooking Cluster UI + Content PRD (Prototype Spec)
+
+Purpose
+Define only the product UI, user flows, content requirements, and SEO rules needed for a SWE Agent to generate a working prototype. No delivery plan or tech stack details.
+
+Scope
+One domain with four hubs: Carbon Steel, High‑Protein Breakfasts, Salsiccia Lab, Air Fryer. Page types: Home, Hub, Spoke, Search.
+
+Non‑Goals
+No build pipeline, infra, analytics, or ad network integration details.
+
+⸻
+
+1) Primary user journeys
+	1.	Answer-in-one-view from Google → Spoke
+
+	•	Land on a Spoke page. The Direct Answer is visible above the fold, 2–4 sentences.
+	•	A Key Table sits directly below.
+	•	Sticky TOC anchors jump to Table, Steps, FAQ.
+	•	“Related” block leads to 3 siblings and the parent Hub.
+
+	2.	Browse within a hub
+
+	•	User opens a Hub. Filters narrow the grid. Cards show title, 1‑line answer, badges.
+	•	Clicking a card opens a Spoke.
+
+	3.	Search on site
+
+	•	Global search in header. Results show page type, short answer, and tags.
+	•	Filters appear contextually per hub in results.
+
+⸻
+
+2) Page types and layouts
+
+2.1 Home
+	•	Hero with a one‑line promise and links to the four Hubs.
+	•	A “Latest” strip (8 items) with card previews.
+	•	Footer with About and Contact.
+
+2.2 Hub (one per theme)
+	•	H1: the hub name and a one‑line scope.
+	•	Filter bar with facet chips (see hub facets below).
+	•	Card grid of Spokes. Each card shows: Title, 1‑line direct answer, key badges, and a small icon.
+	•	Pagination.
+	•	SEO block at page end with short FAQ (3 Q/A) relevant to the hub.
+
+2.3 Spoke (canonical article template)
+	•	H1: exact match to primary query.
+	•	Direct Answer box (2–4 sentences, concise, numeric values spelled out).
+	•	Key Table (the main structured data for the page).
+	•	Steps section (numbered, 5–9 steps).
+	•	FAQ (5 items).
+	•	Sources (short annotated links, 2–4).
+	•	Downloads: CSV and JSON for the table.
+	•	Inline images: 2–4 with short captions and descriptive alt text.
+	•	Optional short video: 30–60 seconds loop, placed after Direct Answer.
+	•	Related: 3 sibling links and 1 link back to the parent Hub.
+	•	Ad slots: see UI Ad layout below.
+
+2.4 Search results
+	•	Search input with the query persisted.
+	•	Result cards with Title, 1‑line answer, tags, and hub label.
+	•	Facets appear if the query maps to a hub.
+
+⸻
+
+3) Components and content contracts
+
+The SWE Agent should implement these as reusable components with clear props and content contracts. Names are suggestions for clarity.
+
+3.1 Global
+	•	Header: Logo, Nav links to Hubs, Search input.
+	•	Footer: About, Contact, simple nav.
+	•	Breadcrumbs: Home → Hub → Spoke.
+
+3.2 Hub components
+	•	FilterBar
+	•	Props: facets[], selected[], clearAll()
+	•	Behavior: chips are toggleable; selected chips pin to the top.
+	•	CardGrid
+	•	Props: items[] with {title, oneLineAnswer, badges[], hub, href}
+	•	Badge
+	•	Small pill labels showing attributes (e.g., Time 10 min, GL Low, Bianco, 500–700 g).
+
+3.3 Spoke components
+	•	DirectAnswer
+	•	Props: asOfDate, body (2–4 sentences).
+	•	Rules: include one numeric value that matches the table below.
+	•	KeyTable
+	•	Column specs vary by hub (see Section 4).
+	•	Behavior: a sticky anchor with an ID to support TOC.
+	•	Steps
+	•	Props: ordered list of 5–9 steps. Each step begins with a verb.
+	•	FAQ
+	•	Props: array of 5 Q/A pairs.
+	•	SourcesList
+	•	Props: 2–4 items with name, url, note.
+	•	Downloads
+	•	Buttons for CSV and JSON.
+	•	ImageFigure
+	•	Props: src, alt, caption.
+	•	VideoBlock (optional)
+	•	Short loop, muted, plays inline.
+	•	RelatedLinks
+	•	Props: 3 sibling pages and 1 link to parent hub.
+	•	StickyTOC
+	•	Links: Direct Answer, Key Table, Steps, FAQ.
+
+3.4 UI Ad layout (visual placeholders only)
+	•	Slot A: in‑content after Direct Answer.
+	•	Slot B: in‑content after Key Table.
+	•	Slot C: sticky sidebar.
+	•	Slot D: footer slot.
+	•	Do not collapse layout if empty. Maintain spacing.
+
+⸻
+
+4) Hub‑specific content rules and facets
+
+4.1 Carbon Steel Pan Troubleshooter
+
+Facet chips: Symptom category, Oil type, Heat level, Time total, Difficulty.
+Card badges: Symptom, Time, Difficulty.
+Spoke Key Table columns
+| Symptom | Likely cause | Fix steps | Heat setting | Test outcome |
+
+Direct Answer guidance
+	•	State the primary cause and the first corrective action. Keep to 2–3 sentences.
+
+Example titles
+	•	“Food sticking after seasoning on carbon steel: causes and fixes”
+	•	“Patchy seasoning on carbon steel: how to even it out”
+
+4.2 High‑Protein Breakfasts That Do Not Crash
+
+Facet chips: Time (≤10 min, 15 min), Protein target (20 g, 30 g, 40 g), GL band (low, medium), Make‑ahead (yes, no).
+Card badges: Time, Protein g, GL band, Make‑ahead.
+Spoke Key Table columns
+| Recipe | Time | Protein | Carbs | Fat | GL | Make‑ahead |
+
+Direct Answer guidance
+	•	Open with time, protein grams, and GL band. Keep to 2–3 sentences.
+
+Example titles
+	•	“30 g protein cottage‑egg scramble in 8 minutes”
+	•	“Overnight Greek yogurt cup, 35 g protein, low GL”
+
+4.3 Salsiccia & Weeknight Pasta Lab
+
+Facet chips: Sauce base (cream, tomato, bianco), Deglaze (wine, stock, none), Cheese, Timing band (15–20, 20–25), Add‑ins (fennel, ricotta, sun‑dried tomato).
+Card badges: Sauce base, Deglaze, Cheese, Timing.
+Spoke Key Table columns
+| Variant | Pan order | Deglaze | Liquid | Cheese | Timing | Notes |
+
+Direct Answer guidance
+	•	State the pan order and the deglaze choice in one sentence. Add total time.
+
+Example titles
+	•	“Rigatoni salsiccia bianco with ricotta, 18 minutes”
+	•	“Tomato‑cream salsiccia with fennel and white wine, 22 minutes”
+
+4.4 Air Fryer Macro‑Smart Recipes
+
+Facet chips: Item, Cut, Weight band, Temp band, Pretreatment (brine, marinade, dry, none), Flip (yes, no).
+Card badges: Item, Weight band, Temp, Time.
+Spoke Key Table columns
+| Item | Cut | Weight | Temp | Time | Prep | Flip? | Rest | Doneness |
+
+Direct Answer guidance
+	•	Give temp, time, and doneness in one sentence. Add one crisp check.
+
+Example titles
+	•	“Chicken thighs 600–700 g in air fryer: 200 °C for 18–22 min, 74 °C doneness”
+	•	“Broccoli florets 400 g: 205 °C for 10–12 min, shake at 6 min”
+
+⸻
+
+5) Content rules (applies to all Spokes)
+	1.	Direct Answer 2–4 sentences, one numeric value repeated from the table.
+	2.	Word count 600–900 words total.
+	3.	Images 2–4. Each has a clear caption and descriptive alt text.
+	4.	Steps 5–9, start with verbs, include times and temperatures where relevant.
+	5.	FAQ 5 items. Short answers under 60 words each.
+	6.	Links 2–4 authoritative sources at the end with 1‑line annotations.
+	7.	Downloads provide CSV and JSON for the table.
+	8.	Tone direct, helpful, no fluff, no em dashes.
+	9.	Units metric primary. If relevant, show imperial in parentheses.
+	10.	Copy hygiene avoid hedging. If a range is needed, write it as a simple numeric range.
+
+⸻
+
+6) SEO requirements
+	1.	URL pattern
+
+	•	Hub: /carbon-steel/, /high-protein/, /salsiccia/, /air-fryer/
+	•	Spoke: /[hub]/[slug]/
+
+	2.	Title tag
+
+	•	50–60 characters, includes the exact query phrase. Example: “Food sticking after seasoning on carbon steel: fixes”.
+
+	3.	Meta description
+
+	•	130–155 characters, contains one numeric fact from the page.
+
+	4.	Headings
+
+	•	One H1 only, exact match to query.
+	•	Use H2 for Key Table, Steps, FAQ, Sources.
+
+	5.	Internal links
+
+	•	Each Spoke links to 3 siblings and its Hub. Anchor texts use attribute phrases (e.g., “bianco with ricotta”).
+
+	6.	Images
+
+	•	Filenames include keyword and attribute (e.g., carbon-steel-sticking-test-outcome.jpg).
+	•	Alt text mirrors query language in natural sentences.
+
+	7.	Structured data types
+
+	•	Hubs use ItemList.
+	•	Spokes use one of: HowTo, Recipe, FAQPage.
+	•	Required content fields must be present to support these types (times, temps, nutrition as needed). Do not include code here, only ensure content exists to populate those fields.
+
+	8.	Snippet targeting
+
+	•	Place Direct Answer before the first H2.
+	•	Keep the Direct Answer under 80 words.
+	•	Ensure the table header uses concise, descriptive labels.
+
+⸻
+
+7) Accessibility rules
+	1.	All images have alt text that conveys function, not only appearance.
+	2.	Headings form a logical outline, no skipped levels.
+	3.	All interactive elements are reachable and usable with keyboard.
+	4.	Link text is descriptive and unique.
+
+⸻
+
+8) Sample content seeds for prototype
+
+8.1 Carbon Steel (1 sample)
+	•	Title: Food sticking after seasoning on carbon steel: causes and fixes
+	•	Direct Answer: If food sticks after seasoning, the most common cause is excess oil that never polymerized. Heat the pan to light smoke, wipe to a thin sheen, and bake on 3 thin coats until a dry, hard film forms. Test by sliding an egg and checking for tackiness.
+	•	Key Table row: Symptom=Sticking, Cause=Insufficient polymerization, Fix steps=Preheat 2 min, wipe to sheen, heat to light smoke 3–4 min, cool, repeat 3x, Heat=Medium‑high to first smoke, Test outcome=Egg slides cleanly.
+
+8.2 High‑Protein (1 sample)
+	•	Title: 30 g protein cottage‑egg scramble in 8 minutes
+	•	Direct Answer: This scramble delivers about 30 g protein in 8 minutes with a low GL. Use 2 eggs, 150 g low‑fat cottage cheese, and 60 g chopped spinach. Cook until curds set, then rest 1 minute before serving.
+	•	Key Table row: Recipe=Scramble, Time=8, Protein=30, Carbs=6, Fat=12, GL=Low, Make‑ahead=No.
+
+8.3 Salsiccia (1 sample)
+	•	Title: Rigatoni salsiccia bianco with ricotta, 18 minutes
+	•	Direct Answer: Brown salsiccia, deglaze with a splash of pasta water, then add ricotta and emulsify off heat. Toss with rigatoni, finish with lemon zest. Total time is about 18 minutes.
+	•	Key Table row: Variant=Bianco ricotta, Pan order=Brown, deglaze, emulsify, toss, Deglaze=None, Liquid=Pasta water, Cheese=Ricotta, Timing=18, Notes=Zest and black pepper to finish.
+
+8.4 Air Fryer (1 sample)
+	•	Title: Chicken thighs 600–700 g in air fryer: 200 °C for 18–22 min, 74 °C doneness
+	•	Direct Answer: For 600–700 g bone‑in thighs, cook at 200 °C for 18–22 minutes, flip at 12 minutes, and rest 3 minutes. Check an internal temp of 74 °C at the thickest part.
+	•	Key Table row: Item=Chicken thighs, Cut=Bone‑in, Weight=600–700 g, Temp=200 °C, Time=18–22, Prep=Dry, Flip?=Yes, Rest=3, Doneness=74 °C.
+
+⸻
+
+9) Acceptance criteria for the prototype
+	1.	Home, four Hubs, one Spoke per hub, and Search render correctly on mobile and desktop.
+	2.	Spoke pages include Direct Answer, Key Table, Steps, FAQ, Sources, Downloads, Images, Related links, and the four ad slot placeholders.
+	3.	Hub pages filter and show badge chips per hub facets.
+	4.	Internal links resolve: Hub ↔ Spoke, and Spoke ↔ 3 siblings.
+	5.	Titles, H1s, and meta descriptions follow the SEO rules above.
+	6.	Images show captions and alt text.
+	7.	Sticky TOC anchors scroll to sections.
+	8.	No em dashes in copy.
+
+⸻
+
+End of prototype spec
